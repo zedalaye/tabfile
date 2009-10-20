@@ -1,0 +1,169 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="fr">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>TabFile</title>
+<style>
+<!--
+
+h1           { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 24 pt; font-weight: bold }
+body         { background-color: #E6E8FF; font-family: Verdana, Arial, Helvetica, sans-serif; 
+               font-size: 10 pt }
+table        { font-size: 10 pt }
+-->
+</style>
+</head>
+
+<body>
+
+<h1>TabFile</h1>
+<p>L'unité TabFile permet de manipuler les fichiers comme des tableaux de
+caractères.</p>
+<p>Elle propose une classe d'objet, TTabFile, qui encapsule les mapped files de
+Win32. La plupart des méthodes de la classe sont protected car elle est
+utilisable par l'intermédiaire d'une interface, permettant de ce fait de
+réaliser des objets tableaux très simples à manipuler.</p>
+
+<p>En général, la classe TTabFile n'est utilisée que pour la création de
+l'objet. L'objet retourné par un des constructeur de cette classe est alors
+mémorisé dans un pointeur d'interface de type ITabFile. On peut toutefois
+imaginer de dériver une classe de TTabFile pour une utilisation particulière.</p>
+
+<p>La classe TTabFile implémente le mécanisme de comptage de référence
+autorisé par les interfaces : chaque fois qu'une référence est ajoutée à
+l'objet, le compteur augmente, chaque fois qu'une référence est supprimée, le
+compteur diminue. Lorsque le compteur atteint zéro, l'objet est libéré. De ce
+fait, l'appel du destructeur ou de Free ne doit pas être réalisé par
+l'utilisateur. La gestion de la durée de vie de l'objet est géré par Delphi.</p>
+
+<p>Exemple d'utilisation :</p>
+
+<pre>procedure proc;
+var
+&nbsp; tb: ITabFile;
+begin
+&nbsp; tb := TTabFile.Open('lefichier.ext');
+&nbsp; tb[10] := 'A';
+end;</pre>
+
+<p>Cette procédure déclare une variable tb qui est une interface de type
+ITabFile. Elle initialise sa valeur avec un objet de type TTabFile dont le
+constructeur Open est appelé. Du fait que la classe TTabFile implémente
+l'interface ITabFile, l'affectation est légale. Ensuite, la ligne tb[10] := 'A'
+place le caractère A à l'indice 10 du fichier (à la onzième position).
+Lorsque la fin de la procédure est atteinte, l'interface est libéré et
+l'objet associé détruit (le destructeur se charge de fermer le fichier).</p>
+
+<h2>Propriétés et méthodes de l'interface</h2>
+
+<p>Le tableau est accessibles par les propriétés et méthodes de l'interface.</p>
+
+<table border="1" width="100%">
+  <tr>
+    <th width="110">Propriétés<br>
+      Méthodes<br>
+      Types</th>
+    <th width="160">Type</th>
+    <th>Commentaire</th>
+  </tr>
+  <tr>
+    <td width="110">Size</td>
+    <td width="160">longword</td>
+    <td>Donne la taille du tableau et donc du fichier. Cette propriété est en
+      lecture écriture et donc, une affectation à Size modifie la taille du
+      fichier (agrandissement ou réduction).</td>
+  </tr>
+  <tr>
+    <td width="110">Ptr</td>
+    <td width="160">pchar</td>
+    <td>Donne un pointeur sur le premier caractère du tableau.</td>
+  </tr>
+  <tr>
+    <td width="110">Content</td>
+    <td width="160">tableau de char</td>
+    <td>Propriété indicée permettant d'accéder directement à un caractère
+      du tableau et donc du fichier. C'est la propriété par défaut de
+      l'interface et donc, il n'est pas nécessaire de préciser Content lors de
+      l'accès au tableau.
+      <pre>  tb.Content[1234] := 'C';
+ou
+  tb[1234] := 'C';</pre>
+    </td>
+  </tr>
+  <tr>
+    <td width="110">StringAccess</td>
+    <td width="160">tableau de string</td>
+    <td>Propriété indicée permettant d'accéder à la chaîne de caractère
+      se trouvant à l'indice indiqué.
+      <p>La chaîne est extraite du tableau à partir de l'indice indiqué
+      jusqu'à la fin du tableau ou jusqu'à la rencontre d'un saut de ligne ou
+      d'un retour chariot.</p>
+      <p>Cette propriété est en lecture / écriture, ce qui permet de copier
+      une chaîne à une position du tableau.</td>
+  </tr>
+  <tr>
+    <td width="110">ReadOnly</td>
+    <td width="160">boolean</td>
+    <td>Propriété en lecture seule indiquant si le tableau est en lecture
+      seule ou en lecture écriture. Ce mode dépend du mode d'ouverture du
+      fichier.</td>
+  </tr>
+  <tr>
+    <td width="110">CloseFile</td>
+    <td width="160">procedure</td>
+    <td>Ferme le fichier associé au tableau. Il n'est plus possible d'accéder
+      au contenu une fois le fichier fermé.</td>
+  </tr>
+  <tr>
+    <td width="110">OpenFile</td>
+    <td width="160">procedure</td>
+    <td>Ouvre un fichier et l'associe au tableau.
+      <pre>  OpenFile(fileName: TFileName; accessMode: TAccessMode);</pre>
+      <p>La procédure a deux paramètres : le nom du fichier et le type
+      d'ouverture (TAccessMode).</p>
+      <p>En général, le tableau est associé au fichier précisé au moment de
+      la création de l'objet tableau. Cette méthode permet d'en changer sans
+      effacer l'objet en cours.</td>
+  </tr>
+  <tr>
+    <td width="110">CreateFile</td>
+    <td width="160">procedure</td>
+    <td>Crée un fichier et l'associe au tableau.
+      <pre>  CreateFile(fileName: TFileName; tabSize: LongWord; bOverwrite: boolean=true);</pre>
+      <p>La précédure a trois paramètres : le nom du fichier, la taille (en
+      octets) et une valeur logique indiquant si un éventuel fichier portant le
+      même nom est écrasé par celui qui va être créé. Attention, par
+      défaut, le fichier est écrasé.</p>
+      <p>En général, le tableau est associé au fichier précisé au moment de
+      la création de l'objet tableau. Cette méthode permet de créer un
+      nouveau fichier sans effacer l'objet en cours.</td>
+  </tr>
+  <tr>
+    <td width="110">TAccessMode</td>
+    <td width="160">type</td>
+    <td>Énumération précisant le mode d'ouverture du fichier associé au
+      tableau. Les valeurs autorisées sont amReadOnly, amReadWrite. Lecture
+      seule ou lecture écriture.</td>
+  </tr>
+</table>
+<h2>Création d'un tabfile</h2>
+<p>Pour utiliser un tabfile, il faut créer un objet de type TTabFile. Cette
+classe possède deux constructeurs :</p>
+<pre>constructor Open(fileName: TFileName; accessMode: TAccessMode=amReadWrite);
+constructor CreateNew(fileName: TFileName; tabSize: LongWord; bOverwrite: boolean=true);</pre>
+<p>Le constructeur Open crée un TTabFile à partir d'un fichier existant. Le
+premier paramètre est le nom du fichier à ouvrir et le second, le mode
+d'accès au fichier (lecteur seule ou lecture écriture, voir TAccessMode).</p>
+<p>Le constructeur CreateNew crée un TTabFile en créant un nouveau fichier. Le
+premier paramètre est le nom du fichier, le seconde représente la taille du
+fichier (et donc du tableau) et le troisième, qui est à True par défaut,
+indique si un fichier portant le même nom doit être écrasé par la création
+du nouveau fichier.</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>
